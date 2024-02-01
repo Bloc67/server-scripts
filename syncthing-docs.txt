@@ -1,0 +1,49 @@
+# download the GPG key then import the key: should see 'OK'
+curl -s https://syncthing.net/release-key.txt | sudo apt-key add -
+ 
+# add the official deb repository with the following command.
+echo "deb https://apt.syncthing.net/ syncthing stable" | sudo tee /etc/apt/sources.list.d/syncthing.list
+
+# Because this repository uses https, we need to install the apt-transport-https package
+sudo apt-get install apt-transport-https
+
+# Update local package index and install syncthing on Ubuntu.
+sudo apt-get update
+sudo apt-get install syncthing
+
+The syncthing systemd service creates configuration files under /home/username/.config/syncthing/ and a folder /home/username/Sync as the default sync folder. The main config file is /home/username/.config/syncthing/config.xml.
+Now we need to modify the config.xml file
+
+vi /home/ubuntu/.config/syncthing/config.xml # change 'ubuntu' to your username
+to change 127.0.0.1:8384 to 0.0.0.0:8384
+
+Enable the service at system start
+Ref: https://docs.syncthing.net/users/autostart.html#using-systemd
+
+There are two types of services that can be enabled: system service and user service.
+
+Running Syncthing as a system service ensures that Syncthing is run at startup even if the Syncthing user has no active session. Since the system service keeps Syncthing running even without an active user session, it is intended to be used on a server.
+
+Running Syncthing as a user service ensures that Syncthing only starts after the user has logged into the system (e.g., via the graphical login screen, or ssh). Thus, the user service is intended to be used on a (multiuser) desktop computer. It avoids unnecessarily running Syncthing instances.
+
+I am planning to set up the system service:
+
+(NOT necessary for Ubuntu >=18.04) From git location mentioned above copy the Syncthing/etc/linux-systemd/system/syncthing@.service file into the load path of the system instance. [/lib/systemd/system/]
+
+Enable and start the service. Replace “ubuntu” with the actual Syncthing user after the @:
+
+# need to input the user password
+systemctl enable syncthing@ubuntu.service
+systemctl start syncthing@ubuntu.service
+Copy
+
+
+Then we can check the status of the servie:
+
+systemctl status syncthing@ubuntu.service
+Accessing the Web interface (GUI) from another computer
+The address is by default: [server IP]:8384
+
+
+Should set a password and enable HTTPS.
+More to read: the FAQ of Syncthing
